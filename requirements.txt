@@ -1,0 +1,8 @@
+customtkinter
+pandas
+pdfplumber
+reportlab
+openpyxl
+pillow
+packaging
+streamlit

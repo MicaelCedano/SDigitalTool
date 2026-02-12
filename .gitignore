@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.venv
+.env
+*.log
+*.pdf
+*.rar
+historial_recibos/
+app_config.txt
+garantia_config.txt
+pdfconduce_config.json
