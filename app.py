@@ -18,7 +18,7 @@ from reportlab.lib.utils import ImageReader
 # ==========================================
 # CONFIGURACIÓN GENERAL
 # ==========================================
-st.set_page_config(page_title="Sistema de Documentos", layout="wide", page_icon="📂")
+st.set_page_config(page_title="Sistema de Documentos", layout="wide", page_icon="📂", initial_sidebar_state="collapsed")
 
 # --- ESTILOS CSS ---
 st.markdown("""
@@ -42,7 +42,7 @@ st.markdown("""
         color: #0969da;
     }
     h1 { color: #2C3E50; }
-    .stButton>button { width: 100%; }
+    .stButton>button { width: 100%; height: 100px; font-size: 20px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -366,10 +366,17 @@ def page_garantia():
 # APP MAIN
 # ==========================================
 
+# Initialize session state for navigation
+if 'navigation_target' not in st.session_state:
+    st.session_state.navigation_target = "Inicio"
+
 # --- SIDEBAR (Global) ---
 with st.sidebar:
     st.title("Menu Principal")
     
+    # Selection bound to session state
+    selection = st.radio("Ir a:", ["Inicio", "Conduce de Entrega", "Recibo de Garantía"], key="navigation_target")
+
     # 1. Config Logo (Global)
     st.sidebar.markdown("---")
     cached_logo = get_cached_logo()
@@ -387,21 +394,27 @@ with st.sidebar:
     st.session_state.accent_color = PDF_THEMES[theme_name]
     
     st.markdown("---")
-    selection = st.radio("Ir a:", ["Inicio", "Conduce de Entrega", "Recibo de Garantía"])
+
 
 # --- ROUTER ---
-if selection == "Inicio":
+if st.session_state.navigation_target == "Inicio":
     st.title("Bienvenido al Sistema")
-    st.markdown("Selecciona una herramienta para comenzar:")
+    st.markdown("### Selecciona una herramienta para comenzar:")
+    st.markdown("<br>", unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
     with col1:
-        st.info("🚚 **Conduce de Entrega**\n\nGenera documentos de entrega leyendo facturas PDF.")
-    with col2:
-        st.warning("🛡️ **Recibo de Garantía**\n\nCrea recibos manuales para equipos con garantía.")
+        if st.button("🚚 Conduce de Entrega\n\nGenerar documentos desde PDF", use_container_width=True, type="primary"):
+            st.session_state.navigation_target = "Conduce de Entrega"
+            st.rerun()
 
-elif selection == "Conduce de Entrega":
+    with col2:
+        if st.button("🛡️ Recibo de Garantía\n\nCrear recibo manual", use_container_width=True, type="primary"):
+            st.session_state.navigation_target = "Recibo de Garantía"
+            st.rerun()
+
+elif st.session_state.navigation_target == "Conduce de Entrega":
     page_conduce()
 
-elif selection == "Recibo de Garantía":
+elif st.session_state.navigation_target == "Recibo de Garantía":
     page_garantia()
