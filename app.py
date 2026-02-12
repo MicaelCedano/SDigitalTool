@@ -370,6 +370,9 @@ def page_garantia():
 if 'navigation_target' not in st.session_state:
     st.session_state.navigation_target = "Inicio"
 
+def navigate_to(page):
+    st.session_state.navigation_target = page
+
 # --- SIDEBAR (Global) ---
 with st.sidebar:
     st.title("Menu Principal")
@@ -404,14 +407,18 @@ if st.session_state.navigation_target == "Inicio":
     
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("🚚 Conduce de Entrega\n\nGenerar documentos desde PDF", use_container_width=True, type="primary"):
-            st.session_state.navigation_target = "Conduce de Entrega"
-            st.rerun()
+        st.button("🚚 Conduce de Entrega\n\nGenerar documentos desde PDF", 
+                  use_container_width=True, 
+                  type="primary", 
+                  on_click=navigate_to, 
+                  args=("Conduce de Entrega",))
 
     with col2:
-        if st.button("🛡️ Recibo de Garantía\n\nCrear recibo manual", use_container_width=True, type="primary"):
-            st.session_state.navigation_target = "Recibo de Garantía"
-            st.rerun()
+        st.button("🛡️ Recibo de Garantía\n\nCrear recibo manual", 
+                  use_container_width=True, 
+                  type="primary", 
+                  on_click=navigate_to, 
+                  args=("Recibo de Garantía",))
 
 elif st.session_state.navigation_target == "Conduce de Entrega":
     page_conduce()
