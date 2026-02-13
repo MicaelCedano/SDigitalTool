@@ -708,6 +708,9 @@ with st.sidebar:
                 st.session_state.active_session = None
                 st.rerun()
 
+            st.markdown("---")
+            st.checkbox("📡 Modo Tiempo Real (Auto-Recarga)", value=False, key="live_mode", help="Activa para ver cambios automáticamente. Desactiva para editar.")
+
 
 # --- ROUTER ---
 if st.session_state.navigation_target == "Inicio":
@@ -746,3 +749,8 @@ elif st.session_state.navigation_target == "Conduce con IMEIs":
 
 elif st.session_state.navigation_target == "Recibo de Garantía":
     page_garantia()
+
+# --- AUTO-REFRESH LOGIC ---
+if st.session_state.get('active_session') and st.session_state.get('live_mode'):
+    time.sleep(2)
+    st.rerun()
