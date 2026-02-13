@@ -650,3 +650,4 @@ class PDFProcessorApp(ctk.CTk):
 if __name__ == "__main__":
     app = PDFProcessorApp()
     app.mainloop()
+    

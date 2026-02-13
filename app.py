@@ -125,8 +125,14 @@ def get_logo_image_reader(logo_source):
 def clean_model_name(model_name):
     # Lista de colores simplificada para mantener codigo limpio
     colors_to_remove = [
-        'negro', 'rojo', 'verde', 'azul', 'blanco', 'gris', 'plateado', 'dorado',
-        'black', 'red', 'green', 'blue', 'white', 'gray', 'silver', 'gold'
+        'negro', 'rojo', 'verde', 'azul', 'blanco', 'gris', 'plateado',
+        'dorado', 'púrpura', 'morado', 'lavanda', 'rosa', 'rosado', 'amarillo', 'naranja', 'marrón',
+        'cyan', 'magenta', 'grafito', 'sierra', 'black', 'red', 'green',
+        'blue', 'white', 'gray', 'silver', 'gold', 'purple', 'pink',
+        'yellow', 'orange', 'brown', 'graphite', 'midnight blue',
+        'desert gold', 'titanium', 'oro', 'arena', 'pantone', 'tapestry',
+        'arabesque', 'navy', 'violet', 'mint', 'cream', 'beige', 'charcoal',
+        'blaze', 'pure', 'tendril', 'polar', 'deep', 'space', 'rose'
     ]
     model = model_name
     model = re.sub(r'\s*5g\b', '', model, flags=re.IGNORECASE)
@@ -363,6 +369,172 @@ def page_garantia():
                 st.markdown(f'<iframe src="data:application/pdf;base64,{b64_pdf}" width="100%" height="600"></iframe>', unsafe_allow_html=True)
 
 # ==========================================
+# MODULO 3: CONDUCE CON IMEIS
+# ==========================================
+def generate_conduce_imeis_pdf(destinatario, factura, logo_source, data_df, accent_hex):
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, 
+                            leftMargin=0.4*inch, rightMargin=0.4*inch, 
+                            topMargin=0.3*inch, bottomMargin=0.3*inch)
+    story = []
+    styles = getSampleStyleSheet()
+
+    # --- HEADER ---
+    logo_paragraph = get_logo_image_reader(logo_source)
+    
+    title_style = ParagraphStyle('TitleCustom', parent=styles['Heading1'], alignment=2, fontSize=18, spaceAfter=5, textColor=colors.HexColor("#2C3E50"))
+    title = Paragraph("CONDUCE DE ENTREGA (IMEIs)", title_style)
+    
+    header_table = Table([[logo_paragraph, title]], colWidths=[2.5*inch, 5.0*inch])
+    header_table.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'MIDDLE')]))
+    story.append(header_table)
+    story.append(Spacer(1, 0.1*inch))
+
+    # --- INFO ---
+    info_data = [
+        [f"FECHA: {datetime.now().strftime('%d/%m/%Y')}", f"FACTURA N°: {factura}"],
+        [f"CLIENTE: {destinatario}", ""]
+    ]
+    info_table = Table(info_data, colWidths=[5.2*inch, 2.5*inch])
+    info_table.setStyle(TableStyle([
+        ('FONTNAME', (0,0), (-1,-1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,-1), 9),
+        ('TEXTCOLOR', (0,0), (-1,-1), colors.HexColor("#34495E")),
+        ('LINEBELOW', (0,0), (-1,0), 1, colors.HexColor(accent_hex)),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 2),
+    ]))
+    story.append(info_table)
+    story.append(Spacer(1, 0.1*inch))
+
+    # --- TITLE GOODS ---
+    Story_Goods = [
+        [Paragraph("<b>DETALLE DE MERCANCÍA</b>", ParagraphStyle('H2Center', parent=styles['Normal'], fontSize=10, alignment=1, textColor=colors.black))]
+    ]
+    t_title_goods = Table(Story_Goods, colWidths=[7.7*inch])
+    t_title_goods.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor(accent_hex)),
+        ('BOX', (0,0), (-1,-1), 0.5, colors.grey),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+    ]))
+    story.append(t_title_goods)
+    
+    # --- GOODS TABLE ---
+    prod_data = [[Paragraph('<b>CANT</b>', styles['Normal']), Paragraph('<b>DESCRIPCIÓN DEL MODELO / EQUIPO</b>', styles['Normal'])]]
+    
+    data = data_df.sort_values(by="Modelo")
+    row_style = ParagraphStyle('Row', parent=styles['Normal'], fontSize=10, leading=11)
+    
+    for _, row in data.iterrows():
+        prod_data.append([str(row['Cantidad']), Paragraph(str(row['Modelo']), row_style)])
+        
+    t_products = Table(prod_data, colWidths=[0.8*inch, 6.9*inch])
+    t_products.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
+        ('ALIGN', (0,0), (-1,0), 'CENTER'),
+        ('ALIGN', (0,1), (0,-1), 'CENTER'),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,0), 9),
+    ]))
+    story.append(t_products)
+    story.append(Spacer(1, 0.2*inch))
+
+    # --- IMEIS SECTION ---
+    # Check if any IMEIs exist
+    has_imeis = data['IMEIs'].str.strip().ne('').any()
+    
+    if has_imeis:
+        # Title IMEIs
+        Story_Imeis_Title = [
+            [Paragraph("<b>DETALLE DE IMEIS / SERIALES</b>", ParagraphStyle('H2Center', parent=styles['Normal'], fontSize=10, alignment=1, textColor=colors.black))]
+        ]
+        t_title_imeis = Table(Story_Imeis_Title, colWidths=[7.7*inch])
+        t_title_imeis.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,-1), colors.HexColor(accent_hex)),
+            ('BOX', (0,0), (-1,-1), 0.5, colors.grey),
+            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ]))
+        story.append(t_title_imeis)
+
+        # IMEIs Content
+        imei_rows = []
+        style_imeis = ParagraphStyle('Imeis', parent=styles['Normal'], fontSize=8, leading=10)
+        
+        for _, row in data.iterrows():
+            imeis_text = str(row['IMEIs']).strip()
+            if imeis_text:
+                full_text = f"<b>{row['Modelo']}:</b> {imeis_text}"
+                imei_rows.append([Paragraph(full_text, style_imeis)])
+        
+        if imei_rows:
+            t_imeis_content = Table(imei_rows, colWidths=[7.7*inch])
+            t_imeis_content.setStyle(TableStyle([
+                ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+                ('VALIGN', (0,0), (-1,-1), 'TOP'),
+                ('topPadding', (0,0), (-1,-1), 3),
+                ('bottomPadding', (0,0), (-1,-1), 3),
+            ]))
+            story.append(t_imeis_content)
+        
+        story.append(Spacer(1, 0.2*inch))
+
+    # --- FOOTER ---
+    note_text = """<b>Nota Importante:</b> Al firmar como "Recibido Conforme", el cliente acepta las políticas de la empresa y certifica que ha recibido la mercancía detallada en este conduce, con los seriales/IMEIs aquí descritos. La mercancía viaja por cuenta y riesgo del comprador."""
+    story.append(Paragraph(note_text, ParagraphStyle('Note', parent=styles['Normal'], fontSize=7)))
+    story.append(Spacer(1, 0.4*inch))
+
+    sig_data = [["_______________________", "_______________________"], ["Despachado por", "RECIBIDO CONFORME"]]
+    sig_table = Table(sig_data, colWidths=[3.75*inch, 3.75*inch])
+    sig_table.setStyle(TableStyle([('ALIGN', (0,0), (-1,-1), 'CENTER')]))
+    story.append(sig_table)
+
+    doc.build(story)
+    buffer.seek(0)
+    return buffer
+
+def page_conduce_imeis():
+    st.header("📱 Generador de Conduces con IMEIs")
+    
+    uploaded_pdf = st.file_uploader("📂 Sube tu factura (PDF)", type="pdf", key="conduce_imeis_pdf")
+    
+    if uploaded_pdf:
+        if 'ci_file' not in st.session_state or st.session_state.ci_file != uploaded_pdf.name:
+            st.session_state.ci_file = uploaded_pdf.name
+            cli, fac, df = extract_conduce_info(uploaded_pdf)
+            st.session_state.ci_cli = cli
+            st.session_state.ci_fac = fac
+            # Add separate empty column for IMEIs if not present
+            if 'IMEIs' not in df.columns:
+                df['IMEIs'] = ""
+            st.session_state.ci_df = df
+    
+    col1, col2 = st.columns(2)
+    destinatario = col1.text_input("Destinatario", value=st.session_state.get('ci_cli', ''))
+    factura = col2.text_input("No. Factura", value=st.session_state.get('ci_fac', ''))
+    
+    st.info("💡 Puedes pegar los IMEIs directamente en la columna 'IMEIs' al lado de cada modelo.")
+    
+    if 'ci_df' in st.session_state:
+        edited_df = st.data_editor(
+            st.session_state.ci_df, 
+            num_rows="dynamic", 
+            use_container_width=True,
+            column_config={
+                "Cantidad": st.column_config.NumberColumn(default=1, min_value=1),
+                "IMEIs": st.column_config.TextColumn("IMEIs / Seriales", width="large", help="Pega aquí los seriales separados por espacio o coma, o cada uno en una linea nueva")
+            }
+        )
+    else:
+        edited_df = pd.DataFrame(columns=['Cantidad', 'Modelo', 'IMEIs'])
+
+    if st.button("Generar PDF con IMEIs", type="primary", use_container_width=True):
+        if 'logo_active' in st.session_state:
+            pdf_bytes = generate_conduce_imeis_pdf(destinatario, factura, st.session_state.logo_active, edited_df, st.session_state.accent_color).getvalue()
+            b64_pdf = base64.b64encode(pdf_bytes).decode('utf-8')
+            st.markdown(f'<iframe src="data:application/pdf;base64,{b64_pdf}" width="100%" height="600"></iframe>', unsafe_allow_html=True)
+
+# ==========================================
 # APP MAIN
 # ==========================================
 
@@ -378,7 +550,7 @@ with st.sidebar:
     st.title("Menu Principal")
     
     # Selection bound to session state
-    selection = st.radio("Ir a:", ["Inicio", "Conduce de Entrega", "Recibo de Garantía"], key="navigation_target")
+    selection = st.radio("Ir a:", ["Inicio", "Conduce de Entrega", "Conduce con IMEIs", "Recibo de Garantía"], key="navigation_target")
 
     # 1. Config Logo (Global)
     st.sidebar.markdown("---")
@@ -414,6 +586,14 @@ if st.session_state.navigation_target == "Inicio":
                   args=("Conduce de Entrega",))
 
     with col2:
+        st.button("📱 Conduce con IMEIs\n\nIncluye seriales/IMEIs", 
+                  use_container_width=True, 
+                  type="primary", 
+                  on_click=navigate_to, 
+                  args=("Conduce con IMEIs",))
+
+    col3, col4 = st.columns(2)
+    with col3:
         st.button("🛡️ Recibo de Garantía\n\nCrear recibo manual", 
                   use_container_width=True, 
                   type="primary", 
@@ -422,6 +602,9 @@ if st.session_state.navigation_target == "Inicio":
 
 elif st.session_state.navigation_target == "Conduce de Entrega":
     page_conduce()
+
+elif st.session_state.navigation_target == "Conduce con IMEIs":
+    page_conduce_imeis()
 
 elif st.session_state.navigation_target == "Recibo de Garantía":
     page_garantia()
