@@ -4,6 +4,9 @@ import pdfplumber
 import re
 import os
 import base64
+import json
+import glob
+import time
 from datetime import datetime
 from io import BytesIO
 
@@ -118,6 +121,35 @@ def get_logo_image_reader(logo_source):
     except Exception as e:
         st.warning(f"Error cargando logo: {e}")
     return logo_paragraph
+
+# ==========================================
+# GESTIÓN DE SESIONES COLABORATIVAS
+# ==========================================
+SESSIONS_DIR = "sessions"
+if not os.path.exists(SESSIONS_DIR):
+    os.makedirs(SESSIONS_DIR)
+
+def get_available_sessions():
+    files = glob.glob(os.path.join(SESSIONS_DIR, "*.json"))
+    return [os.path.basename(f).replace(".json", "") for f in files]
+
+def load_session_data(session_name):
+    try:
+        with open(os.path.join(SESSIONS_DIR, f"{session_name}.json"), "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        st.error(f"Error cargando sesión: {e}")
+        return None
+
+def save_session_data(session_name, data):
+    try:
+        data['last_updated'] = datetime.now().isoformat()
+        with open(os.path.join(SESSIONS_DIR, f"{session_name}.json"), "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+        return True
+    except Exception as e:
+        st.error(f"Error guardando sesión: {e}")
+        return False
 
 # ==========================================
 # MODULO 1: CONDUCE SIMPLE (Original)
@@ -264,7 +296,33 @@ def page_conduce():
     factura = col2.text_input("No. Factura", value=st.session_state.get('c_fac', ''))
     
     if 'c_df' in st.session_state:
-        edited_df = st.data_editor(st.session_state.c_df, num_rows="dynamic", use_container_width=True)
+        # Check active session for auto-sync
+        active_session = st.session_state.get('active_session')
+        
+        # Load from session if requested (via button or init)
+        if active_session and st.session_state.get('trigger_load_session'):
+            session_data = load_session_data(active_session)
+            if session_data and session_data.get('type') == 'conduce_simple':
+                st.session_state.c_cli = session_data.get('destinatario', '')
+                st.session_state.c_fac = session_data.get('factura', '')
+                st.session_state.c_df = pd.DataFrame(session_data.get('items', []))
+                st.session_state.trigger_load_session = False
+                st.rerun()
+
+        edited_df = st.data_editor(st.session_state.c_df, num_rows="dynamic", use_container_width=True, key="editor_simple")
+        
+        # Auto-save changes to session
+        if active_session:
+            current_data = {
+                "type": "conduce_simple",
+                "destinatario": destinatario, # Use current input values
+                "factura": factura,
+                "items": edited_df.to_dict('records')
+            }
+            # Save on every interaction potentially heavy, but ensures real-time feel
+            save_session_data(active_session, current_data)
+            st.caption(f"☁️ Guardado en sesión: {active_session}")
+            
     else:
         edited_df = pd.DataFrame(columns=['Cantidad', 'Modelo'])
 
@@ -496,6 +554,15 @@ def generate_conduce_imeis_pdf(destinatario, factura, logo_source, data_df, acce
 def page_conduce_imeis():
     st.header("📱 Generador de Conduces con IMEIs")
     
+    # Session Status Banner
+    active_session = st.session_state.get('active_session')
+    if active_session:
+        st.info(f"🔗 MODO COLABORATIVO ACTIVO: **{active_session}**")
+        col_sync1, col_sync2 = st.columns([1, 4])
+        if col_sync1.button("📥 Recargar Datos"):
+             st.session_state.trigger_load_session = True
+             st.rerun()
+             
     uploaded_pdf = st.file_uploader("📂 Sube tu factura (PDF)", type="pdf", key="conduce_imeis_pdf")
     
     if uploaded_pdf:
@@ -515,16 +582,41 @@ def page_conduce_imeis():
     
     st.info("💡 Puedes pegar los IMEIs directamente en la columna 'IMEIs' al lado de cada modelo.")
     
+    st.info("💡 Puedes pegar los IMEIs directamente en la columna 'IMEIs' al lado de cada modelo.")
+    
     if 'ci_df' in st.session_state:
+        # Load logic for IMEIs page
+        if active_session and st.session_state.get('trigger_load_session'):
+            session_data = load_session_data(active_session)
+            if session_data and session_data.get('type') == 'conduce_imeis':
+                st.session_state.ci_cli = session_data.get('destinatario', '')
+                st.session_state.ci_fac = session_data.get('factura', '')
+                st.session_state.ci_df = pd.DataFrame(session_data.get('items', []))
+                st.session_state.trigger_load_session = False # Reset flag
+                st.rerun()
+
         edited_df = st.data_editor(
             st.session_state.ci_df, 
             num_rows="dynamic", 
             use_container_width=True,
+            key="editor_imeis",
             column_config={
                 "Cantidad": st.column_config.NumberColumn(default=1, min_value=1),
                 "IMEIs": st.column_config.TextColumn("IMEIs / Seriales", width="large", help="Pega aquí los seriales separados por espacio o coma, o cada uno en una linea nueva")
             }
         )
+        
+        # Auto-save logic
+        if active_session:
+            current_data = {
+                "type": "conduce_imeis",
+                "destinatario": destinatario,
+                "factura": factura,
+                "items": edited_df.to_dict('records')
+            }
+            save_session_data(active_session, current_data)
+            st.caption(f"☁️ Sincronizado con sesión: {active_session}")
+
     else:
         edited_df = pd.DataFrame(columns=['Cantidad', 'Modelo', 'IMEIs'])
 
@@ -568,7 +660,38 @@ with st.sidebar:
     theme_name = st.selectbox("Tema PDF", list(PDF_THEMES.keys()))
     st.session_state.accent_color = PDF_THEMES[theme_name]
     
+    st.session_state.accent_color = PDF_THEMES[theme_name]
+    
     st.markdown("---")
+    
+    # 3. Collaborative Mode
+    st.sidebar.subheader("🤝 Colaboración (Experimental)")
+    with st.expander("Panel de Sesiones"):
+        session_opts = get_available_sessions()
+        new_session = st.text_input("Nueva Sesión (Nombre)")
+        if st.button("Crear Nueva"):
+            if new_session:
+                save_session_data(new_session, {"created": datetime.now().isoformat(), "items": []})
+                st.success(f"Creada: {new_session}")
+                st.rerun()
+        
+        st.markdown("---")
+        selected_session = st.selectbox("Unirse a Sesión", ["-- Seleccionar --"] + session_opts)
+        
+        if st.button("Conectar / Cargar"):
+            if selected_session and selected_session != "-- Seleccionar --":
+                st.session_state.active_session = selected_session
+                st.session_state.trigger_load_session = True # Trigger load on next run
+                st.success(f"Conectado a: {selected_session}")
+            else:
+                st.session_state.active_session = None
+                st.warning("Desconectado")
+        
+        if st.session_state.get('active_session'):
+            st.sidebar.success(f"🟢 Activa: {st.session_state.active_session}")
+            if st.button("Salir de Sesión"):
+                st.session_state.active_session = None
+                st.rerun()
 
 
 # --- ROUTER ---
