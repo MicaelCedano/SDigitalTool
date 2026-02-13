@@ -306,10 +306,24 @@ def page_conduce():
                 st.session_state.c_cli = session_data.get('destinatario', '')
                 st.session_state.c_fac = session_data.get('factura', '')
                 st.session_state.c_df = pd.DataFrame(session_data.get('items', []))
+    if 'c_df' in st.session_state:
+        # Check active session for auto-sync
+        active_session = st.session_state.get('active_session')
+        
+        # Load from session if requested (via button or init)
+        if active_session and st.session_state.get('trigger_load_session'):
+            session_data = load_session_data(active_session)
+            if session_data and session_data.get('type') == 'conduce_simple':
+                st.session_state.c_cli = session_data.get('destinatario', '')
+                st.session_state.c_fac = session_data.get('factura', '')
+                st.session_state.c_df = pd.DataFrame(session_data.get('items', []))
                 st.session_state.trigger_load_session = False
+                st.session_state.data_version = st.session_state.get('data_version', 0) + 1 # Force editor update
                 st.rerun()
 
-        edited_df = st.data_editor(st.session_state.c_df, num_rows="dynamic", use_container_width=True, key="editor_simple")
+        # Dynamic key to force refresh when data updates from session
+        editor_key = f"editor_simple_{st.session_state.get('data_version', 0)}"
+        edited_df = st.data_editor(st.session_state.c_df, num_rows="dynamic", use_container_width=True, key=editor_key)
         
         # Auto-save changes to session
         if active_session:
@@ -582,8 +596,6 @@ def page_conduce_imeis():
     
     st.info("💡 Puedes pegar los IMEIs directamente en la columna 'IMEIs' al lado de cada modelo.")
     
-    st.info("💡 Puedes pegar los IMEIs directamente en la columna 'IMEIs' al lado de cada modelo.")
-    
     if 'ci_df' in st.session_state:
         # Load logic for IMEIs page
         if active_session and st.session_state.get('trigger_load_session'):
@@ -593,13 +605,16 @@ def page_conduce_imeis():
                 st.session_state.ci_fac = session_data.get('factura', '')
                 st.session_state.ci_df = pd.DataFrame(session_data.get('items', []))
                 st.session_state.trigger_load_session = False # Reset flag
+                st.session_state.data_version = st.session_state.get('data_version', 0) + 1 # Force editor update
                 st.rerun()
 
+        # Dynamic key to force refresh
+        editor_key = f"editor_imeis_{st.session_state.get('data_version', 0)}"
         edited_df = st.data_editor(
             st.session_state.ci_df, 
             num_rows="dynamic", 
             use_container_width=True,
-            key="editor_imeis",
+            key=editor_key,
             column_config={
                 "Cantidad": st.column_config.NumberColumn(default=1, min_value=1),
                 "IMEIs": st.column_config.TextColumn("IMEIs / Seriales", width="large", help="Pega aquí los seriales separados por espacio o coma, o cada uno en una linea nueva")
