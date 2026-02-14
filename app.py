@@ -26,26 +26,151 @@ st.set_page_config(page_title="Sistema de Documentos", layout="wide", page_icon=
 # --- ESTILOS CSS ---
 st.markdown("""
 <style>
-    .big-button {
-        width: 100%;
-        padding: 20px;
-        font-size: 20px;
-        font-weight: bold;
-        border-radius: 10px;
-        background-color: #f0f2f6;
-        border: 1px solid #d0d7de;
-        text-align: center;
-        margin-bottom: 10px;
-        cursor: pointer;
-        transition: 0.3s;
+    /* IMPORTAR FUENTES MODERNAS */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+    html, body, [class*="css"] {
+        font-family: 'Inter', sans-serif;
     }
-    .big-button:hover {
-        background-color: #e0e5ea;
-        border-color: #0969da;
+
+    /* FONDO Y ESTRUCTURA GENERAL */
+    .stApp {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+
+    /* ESTILO DE TÍTULOS */
+    h1, h2, h3 {
+        color: #2C3E50;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+    }
+    
+    h1 {
+        background: -webkit-linear-gradient(45deg, #0969da, #2C3E50);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 30px;
+    }
+
+    /* TARJETAS Y CONTENEDORES */
+    .stCard {
+        background-color: white;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+        transition: transform 0.2s;
+    }
+    .stCard:hover {
+        transform: translateY(-2px);
+    }
+    
+    div.block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        max-width: 1200px;
+    }
+
+    /* BOTONES MODERNOS */
+    .stButton>button {
+        background: linear-gradient(90deg, #0969da 0%, #0550ae 100%);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(9, 105, 218, 0.2);
+        width: 100%;
+    }
+    
+    .stButton>button:hover {
+        background: linear-gradient(90deg, #0b7bed 0%, #0660cf 100%);
+        box-shadow: 0 6px 12px rgba(9, 105, 218, 0.3);
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .stButton>button:active {
+        transform: translateY(0);
+    }
+
+    /* BOTONES SECUNDARIOS (Outline) */
+    .secondary-btn > button {
+        background: transparent;
+        border: 2px solid #0969da;
         color: #0969da;
     }
-    h1 { color: #2C3E50; }
-    .stButton>button { width: 100%; height: 100px; font-size: 20px; }
+
+    /* INPUTS Y FORMULARIOS */
+    .stTextInput>div>div>input {
+        border-radius: 10px;
+        border: 1px solid #e0e0e0;
+        padding: 10px 15px;
+        font-size: 16px;
+        transition: all 0.2s;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+    }
+    
+    .stTextInput>div>div>input:focus {
+        border-color: #0969da;
+        box-shadow: 0 0 0 2px rgba(9, 105, 218, 0.2);
+    }
+
+    /* DATA EDITOR / TABLAS */
+    .stDataFrame {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border: 1px solid #eee;
+    }
+
+    /* SIDEBAR */
+    section[data-testid="stSidebar"] {
+        background-color: white;
+        border-right: 1px solid #eee;
+    }
+    
+    section[data-testid="stSidebar"] h1 {
+        font-size: 1.5rem !important;
+        margin-bottom: 1rem;
+    }
+
+    /* ALERTAS Y MENSAJES */
+    .stAlert {
+        border-radius: 10px;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    /* UTILITIES */
+    .spacer {
+        height: 20px;
+    }
+    
+    .feature-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 1rem;
+        border: 1px solid #eee;
+        text-align: center;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .feature-card:hover {
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+        border-color: #0969da;
+        transform: translateY(-5px);
+    }
+    
+    hr {
+        margin: 2em 0;
+        border: 0;
+        border-top: 1px solid #eee;
+    }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -675,8 +800,6 @@ with st.sidebar:
     theme_name = st.selectbox("Tema PDF", list(PDF_THEMES.keys()))
     st.session_state.accent_color = PDF_THEMES[theme_name]
     
-    st.session_state.accent_color = PDF_THEMES[theme_name]
-    
     st.markdown("---")
     
     # 3. Collaborative Mode
@@ -710,32 +833,64 @@ with st.sidebar:
 
             st.markdown("---")
             st.checkbox("📡 Modo Tiempo Real (Auto-Recarga)", value=False, key="live_mode", help="Activa para ver cambios automáticamente. Desactiva para editar.")
-
+            
+    st.sidebar.markdown("---")
+    st.sidebar.markdown(
+        """
+        <div style="text-align: center; color: #666; font-size: 12px;">
+            <p>Sistema de Documentos v2.0</p>
+            <p>© 2026</p>
+        </div>
+        """, 
+        unsafe_allow_html=True
+    )
 
 # --- ROUTER ---
 if st.session_state.navigation_target == "Inicio":
-    st.title("Bienvenido al Sistema")
-    st.markdown("### Selecciona una herramienta para comenzar:")
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; margin-bottom: 50px;'>Bienvenido al Sistema de Documentos</h1>", unsafe_allow_html=True)
     
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
+    
     with col1:
-        st.button("🚚 Conduce de Entrega\n\nGenerar documentos desde PDF", 
+        st.markdown("""
+        <div class="feature-card">
+            <div style="font-size: 40px; margin-bottom: 15px;">🚚</div>
+            <h3 style="margin-bottom: 10px;">Conduce de Entrega</h3>
+            <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Genera documentos de entrega automáticamente procesando tus facturas PDF.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        st.button("Acceder a Conduces", 
+                  key="btn_conduce",
                   use_container_width=True, 
                   type="primary", 
                   on_click=navigate_to, 
                   args=("Conduce de Entrega",))
 
     with col2:
-        st.button("📱 Conduce con IMEIs\n\nIncluye seriales/IMEIs", 
+        st.markdown("""
+        <div class="feature-card">
+            <div style="font-size: 40px; margin-bottom: 15px;">📱</div>
+            <h3 style="margin-bottom: 10px;">Conduce con IMEIs</h3>
+            <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Herramienta especializada para equipos que requieren registro de seriales o IMEIs.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        st.button("Acceder a IMEIs", 
+                  key="btn_imeis",
                   use_container_width=True, 
                   type="primary", 
                   on_click=navigate_to, 
                   args=("Conduce con IMEIs",))
 
-    col3, col4 = st.columns(2)
     with col3:
-        st.button("🛡️ Recibo de Garantía\n\nCrear recibo manual", 
+        st.markdown("""
+        <div class="feature-card">
+            <div style="font-size: 40px; margin-bottom: 15px;">🛡️</div>
+            <h3 style="margin-bottom: 10px;">Recibo de Garantía</h3>
+            <p style="color: #666; font-size: 14px; margin-bottom: 20px;">Crea recibos de garantía profesionales de forma manual y rápida.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        st.button("Acceder a Garantía", 
+                  key="btn_garantia",
                   use_container_width=True, 
                   type="primary", 
                   on_click=navigate_to, 
