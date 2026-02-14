@@ -31,6 +31,7 @@ st.markdown("""
 
     html, body, [class*="css"] {
         font-family: 'Inter', sans-serif;
+        color: #1E1E1E; /* Force dark text by default */
     }
 
     /* FONDO Y ESTRUCTURA GENERAL */
@@ -40,7 +41,7 @@ st.markdown("""
 
     /* ESTILO DE TÍTULOS */
     h1, h2, h3 {
-        color: #2C3E50;
+        color: #2C3E50 !important;
         font-weight: 600;
         letter-spacing: -0.5px;
     }
@@ -61,8 +62,25 @@ st.markdown("""
         margin-bottom: 20px;
         transition: transform 0.2s;
     }
-    .stCard:hover {
-        transform: translateY(-2px);
+    
+    .feature-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 1rem;
+        border: 1px solid #eee;
+        text-align: center;
+        transition: all 0.3s ease;
+        height: 100%;
+        color: #333333; /* Dark text specifically for cards */
+    }
+
+    .feature-card h3 {
+        color: #0969da !important; /* Blue title for cards */
+        font-weight: bold;
+    }
+
+    .feature-card p {
+        color: #555555 !important; /* Dark gray for description */
     }
     
     div.block-container {
@@ -74,7 +92,7 @@ st.markdown("""
     /* BOTONES MODERNOS */
     .stButton>button {
         background: linear-gradient(90deg, #0969da 0%, #0550ae 100%);
-        color: white;
+        color: white !important;
         border: none;
         padding: 12px 24px;
         border-radius: 12px;
@@ -89,87 +107,31 @@ st.markdown("""
         background: linear-gradient(90deg, #0b7bed 0%, #0660cf 100%);
         box-shadow: 0 6px 12px rgba(9, 105, 218, 0.3);
         transform: translateY(-2px);
-        color: white;
+        color: white !important;
     }
 
-    .stButton>button:active {
-        transform: translateY(0);
+    /* SIDEBAR CORRECTIONS */
+    section[data-testid="stSidebar"] {
+        background-color: #ffffff;
+        border-right: 1px solid #e0e0e0;
     }
 
-    /* BOTONES SECUNDARIOS (Outline) */
-    .secondary-btn > button {
-        background: transparent;
-        border: 2px solid #0969da;
-        color: #0969da;
+    section[data-testid="stSidebar"] .stMarkdown, 
+    section[data-testid="stSidebar"] h1,
+    section[data-testid="stSidebar"] h2,
+    section[data-testid="stSidebar"] h3,
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] span {
+        color: #333333 !important;
     }
 
     /* INPUTS Y FORMULARIOS */
     .stTextInput>div>div>input {
+        color: #333;
         border-radius: 10px;
         border: 1px solid #e0e0e0;
-        padding: 10px 15px;
-        font-size: 16px;
-        transition: all 0.2s;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
-    }
-    
-    .stTextInput>div>div>input:focus {
-        border-color: #0969da;
-        box-shadow: 0 0 0 2px rgba(9, 105, 218, 0.2);
     }
 
-    /* DATA EDITOR / TABLAS */
-    .stDataFrame {
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        border: 1px solid #eee;
-    }
-
-    /* SIDEBAR */
-    section[data-testid="stSidebar"] {
-        background-color: white;
-        border-right: 1px solid #eee;
-    }
-    
-    section[data-testid="stSidebar"] h1 {
-        font-size: 1.5rem !important;
-        margin-bottom: 1rem;
-    }
-
-    /* ALERTAS Y MENSAJES */
-    .stAlert {
-        border-radius: 10px;
-        border: none;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-    
-    /* UTILITIES */
-    .spacer {
-        height: 20px;
-    }
-    
-    .feature-card {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 1rem;
-        border: 1px solid #eee;
-        text-align: center;
-        transition: all 0.3s ease;
-        height: 100%;
-    }
-    
-    .feature-card:hover {
-        box-shadow: 0 10px 20px rgba(0,0,0,0.08);
-        border-color: #0969da;
-        transform: translateY(-5px);
-    }
-    
-    hr {
-        margin: 2em 0;
-        border: 0;
-        border-top: 1px solid #eee;
-    }
 
 </style>
 """, unsafe_allow_html=True)
