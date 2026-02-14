@@ -110,26 +110,86 @@ st.markdown("""
         color: white !important;
     }
 
-    /* SIDEBAR CORRECTIONS */
+    /* SIDEBAR REDESIGN */
     section[data-testid="stSidebar"] {
-        background-color: #ffffff;
-        border-right: 1px solid #e0e0e0;
+        background-color: #f8f9fa; /* Light grey modern background */
+        border-right: 1px solid #dee2e6;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+    }
+    
+    /* Sidebar Headers */
+    section[data-testid="stSidebar"] h1, 
+    section[data-testid="stSidebar"] h2, 
+    section[data-testid="stSidebar"] h3 {
+        color: #2c3e50 !important;
+        font-family: 'Inter', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.9rem !important;
+        margin-top: 20px;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 5px;
     }
 
-    section[data-testid="stSidebar"] .stMarkdown, 
-    section[data-testid="stSidebar"] h1,
-    section[data-testid="stSidebar"] h2,
-    section[data-testid="stSidebar"] h3,
+    /* Sidebar Text Elements */
+    section[data-testid="stSidebar"] .stMarkdown,
     section[data-testid="stSidebar"] label,
-    section[data-testid="stSidebar"] span {
-        color: #333333 !important;
+    section[data-testid="stSidebar"] span,
+    section[data-testid="stSidebar"] p {
+        color: #495057 !important;
+        font-weight: 500;
     }
 
-    /* INPUTS Y FORMULARIOS */
+    /* Custom Radio Buttons (Navigation) */
+    section[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] {
+        background-color: white;
+        padding: 10px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        border: 1px solid #e9ecef;
+    }
+
+    section[data-testid="stSidebar"] .stRadio label {
+        padding: 5px 10px;
+        border-radius: 5px;
+        transition: background 0.2s;
+        cursor: pointer;
+    }
+
+    section[data-testid="stSidebar"] .stRadio label:hover {
+        background-color: #e3f2fd; /* Light blue hover */
+        color: #0d6efd !important;
+    }
+
+    /* Sidebar Widgets Container */
+    section[data-testid="stSidebar"] .stSelectbox > div > div, 
+    section[data-testid="stSidebar"] .stFileUploader > div {
+        background-color: white;
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+    }
+
+    /* Button inside Sidebar */
+    section[data-testid="stSidebar"] button {
+        background: linear-gradient(90deg, #6c757d 0%, #495057 100%);
+        box-shadow: none;
+        height: auto;
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+
+    section[data-testid="stSidebar"] button:hover {
+        background: linear-gradient(90deg, #5a6268 0%, #343a40 100%);
+        transform: translateY(-1px);
+    }
+
+    /* INPUTS Y FORMULARIOS (Global) */
     .stTextInput>div>div>input {
         color: #333;
         border-radius: 10px;
-        border: 1px solid #e0e0e0;
+        border: 1px solid #ced4da;
+        background-color: white;
+        padding: 10px;
     }
 
 
