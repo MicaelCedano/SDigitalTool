@@ -24,72 +24,36 @@ from reportlab.lib.utils import ImageReader
 st.set_page_config(page_title="Sistema de Documentos", layout="wide", page_icon="📂", initial_sidebar_state="collapsed")
 
 # --- ESTILOS CSS ---
-st.markdown("""
-<style>
-    /* IMPORTAR FUENTES MODERNAS */
+# --- ESTILOS CSS ---
+def get_theme_css(theme_mode):
+    # ==========================
+    # CSS COMÚN (Fuentes, Layout)
+    # ==========================
+    common_css = """
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
-
+    
     html, body, [class*="css"] {
         font-family: 'Inter', sans-serif;
-        color: #1E1E1E; /* Force dark text by default */
-    }
-
-    /* FONDO Y ESTRUCTURA GENERAL */
-    .stApp {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    }
-
-    /* ESTILO DE TÍTULOS */
-    h1, h2, h3 {
-        color: #2C3E50 !important;
-        font-weight: 600;
-        letter-spacing: -0.5px;
     }
     
-    h1 {
-        background: -webkit-linear-gradient(45deg, #0969da, #2C3E50);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 30px;
-    }
-
-    /* TARJETAS Y CONTENEDORES */
     .stCard {
-        background-color: white;
         padding: 20px;
         border-radius: 15px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         margin-bottom: 20px;
         transition: transform 0.2s;
     }
+    .stCard:hover { transform: translateY(-2px); }
     
     .feature-card {
-        background: white;
         padding: 1.5rem;
         border-radius: 1rem;
-        border: 1px solid #eee;
         text-align: center;
         transition: all 0.3s ease;
         height: 100%;
-        color: #333333; /* Dark text specifically for cards */
     }
+    .feature-card:hover { transform: translateY(-5px); }
 
-    .feature-card h3 {
-        color: #0969da !important; /* Blue title for cards */
-        font-weight: bold;
-    }
-
-    .feature-card p {
-        color: #555555 !important; /* Dark gray for description */
-    }
-    
-    div.block-container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-        max-width: 1200px;
-    }
-
-    /* BOTONES MODERNOS */
     .stButton>button {
         background: linear-gradient(90deg, #0969da 0%, #0550ae 100%);
         color: white !important;
@@ -102,151 +66,101 @@ st.markdown("""
         box-shadow: 0 4px 6px rgba(9, 105, 218, 0.2);
         width: 100%;
     }
-    
     .stButton>button:hover {
         background: linear-gradient(90deg, #0b7bed 0%, #0660cf 100%);
         box-shadow: 0 6px 12px rgba(9, 105, 218, 0.3);
         transform: translateY(-2px);
         color: white !important;
     }
-
-    /* SIDEBAR REDESIGN */
-    section[data-testid="stSidebar"] {
-        background-color: #f8f9fa; /* Light grey modern background */
-        border-right: 1px solid #dee2e6;
-        box-shadow: 2px 0 10px rgba(0,0,0,0.05);
-    }
+    """
     
-    /* Sidebar Headers */
-    section[data-testid="stSidebar"] h1, 
-    section[data-testid="stSidebar"] h2, 
-    section[data-testid="stSidebar"] h3 {
-        color: #2c3e50 !important;
-        font-family: 'Inter', sans-serif;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        font-size: 0.9rem !important;
-        margin-top: 20px;
-        border-bottom: 2px solid #e9ecef;
-        padding-bottom: 5px;
-    }
-
-    /* Sidebar Text Elements */
-    section[data-testid="stSidebar"] .stMarkdown,
-    section[data-testid="stSidebar"] label,
-    section[data-testid="stSidebar"] span,
-    section[data-testid="stSidebar"] p {
-        color: #495057 !important;
-        font-weight: 500;
-    }
-
-    /* Custom Radio Buttons (Navigation) */
-    section[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] {
-        background-color: white;
-        padding: 10px;
-        border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        border: 1px solid #e9ecef;
-    }
-
-    section[data-testid="stSidebar"] .stRadio label {
-        padding: 5px 10px;
-        border-radius: 5px;
-        transition: background 0.2s;
-        cursor: pointer;
-    }
-
-    section[data-testid="stSidebar"] .stRadio label:hover {
-        background-color: #e3f2fd; /* Light blue hover */
-        color: #0d6efd !important;
-    }
-
-    /* Sidebar Widgets Container */
-    section[data-testid="stSidebar"] .stSelectbox > div > div, 
-    section[data-testid="stSidebar"] .stFileUploader > div {
-        background-color: white;
-        border-radius: 8px;
-        border: 1px solid #ced4da;
-    }
-
-    /* Button inside Sidebar */
-    section[data-testid="stSidebar"] button {
-        background: linear-gradient(90deg, #6c757d 0%, #495057 100%);
-        box-shadow: none;
-        height: auto;
-        padding: 8px 16px;
-        font-size: 0.9rem;
-    }
-
-    section[data-testid="stSidebar"] button:hover {
-        background: linear-gradient(90deg, #5a6268 0%, #343a40 100%);
-        transform: translateY(-1px);
-    }
-
-    /* INPUTS Y FORMULARIOS (Global) */
-    .stTextInput>div>div>input {
-        color: #333;
-        border-radius: 10px;
-        border: 1px solid #ced4da;
-        background-color: white;
-        padding: 10px;
-    }
-
-    /* CORRECCIÓN TOTAL DE CONTRASTE (FORCE LIGHT THEME) */
+    # ==========================
+    # MODO CLARO (LIGHT)
+    # ==========================
+    if theme_mode == "Claro":
+        mode_css = """
+        .stApp { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
+        h1, h2, h3 { color: #2C3E50 !important; }
+        h1 {
+            background: -webkit-linear-gradient(45deg, #0969da, #2C3E50);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .stCard { background-color: white; }
+        .feature-card {
+            background: white; border: 1px solid #eee; color: #333333;
+        }
+        .feature-card h3 { color: #0969da !important; }
+        .feature-card p { color: #555555 !important; }
+        
+        /* Sidebar Claro */
+        section[data-testid="stSidebar"] {
+            background-color: #f8f9fa; border-right: 1px solid #dee2e6;
+        }
+        section[data-testid="stSidebar"] .stMarkdown, section[data-testid="stSidebar"] p, section[data-testid="stSidebar"] label {
+            color: #495057 !important;
+        }
+        
+        /* Inputs Claro */
+        .stTextInput>div>div>input, .stNumberInput>div>div>input, div[data-baseweb="select"] > div {
+            background-color: #ffffff !important; border: 1px solid #ced4da !important; color: #000000 !important;
+        }
+        .stTextInput label, .stSelectbox label, .stFileUploader label { color: #212529 !important; }
+        """
     
-    /* 1. Labels de todos los widgets (Input, Select, etc) */
-    .stTextInput label, .stNumberInput label, .stDateInput label, .stSelectbox label, .stFileUploader label, .stRadio label {
-        color: #212529 !important;
-        font-weight: 600 !important;
-        font-size: 14px !important;
-        opacity: 1 !important;
-    }
+    # ==========================
+    # MODO OSCURO (DARK)
+    # ==========================
+    else:
+        mode_css = """
+        .stApp { background: linear-gradient(135deg, #1a1c24 0%, #0e1117 100%); }
+        h1, h2, h3 { color: #e0e0e0 !important; }
+        h1 {
+            background: -webkit-linear-gradient(45deg, #4da4ff, #e0e0e0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .stCard { background-color: #262730; }
+        .feature-card {
+            background: #262730; border: 1px solid #41444e; color: #e0e0e0;
+        }
+        .feature-card h3 { color: #4da4ff !important; }
+        .feature-card p { color: #b0b0b0 !important; }
+        
+        /* Sidebar Oscuro */
+        section[data-testid="stSidebar"] {
+            background-color: #1e1e1e; border-right: 1px solid #41444e;
+        }
+        section[data-testid="stSidebar"] h1, section[data-testid="stSidebar"] h2, section[data-testid="stSidebar"] h3 {
+             color: #e0e0e0 !important; border-bottom: 2px solid #41444e;
+        }
+        section[data-testid="stSidebar"] .stMarkdown, section[data-testid="stSidebar"] p, section[data-testid="stSidebar"] label {
+            color: #cfcfcf !important;
+        }
+        
+        /* Inputs Oscuro */
+        .stTextInput>div>div>input, .stNumberInput>div>div>input, .stDateInput>div>div, div[data-baseweb="select"] > div {
+            background-color: #262730 !important; border: 1px solid #41444e !important; color: #e0e0e0 !important;
+        }
+        input { color: #e0e0e0 !important; caret-color: #e0e0e0 !important; }
+        .stTextInput label, .stSelectbox label, .stFileUploader label, .stRadio label { color: #e0e0e0 !important; }
+        
+        /* File Uploader Oscuro */
+        [data-testid="stFileUploader"] section {
+            background-color: #262730 !important; border: 1px dashed #41444e !important;
+        }
+        [data-testid="stFileUploader"] span, [data-testid="stFileUploader"] small, [data-testid="stFileUploader"] div {
+            color: #cfcfcf !important;
+        }
+        """
 
-    /* 2. Fondos de Inputs para que sean blancos y no grises oscuros */
-    .stTextInput > div > div, 
-    .stNumberInput > div > div, 
-    .stDateInput > div > div,
-    div[data-baseweb="select"] > div {
-        background-color: #ffffff !important;
-        border: 1px solid #ced4da !important; 
-        color: #000000 !important;
-    }
-    
-    /* 3. Texto dentro de los inputs */
-    input {
-        color: #000000 !important;
-        caret-color: #000000 !important;
-    }
-    
-    /* 4. File Uploader (Subida de archivos) */
-    [data-testid="stFileUploader"] {
-        padding: 10px;
-        border-radius: 10px;
-    }
-    [data-testid="stFileUploader"] section {
-        background-color: #f8f9fa !important; /* Gris muy claro */
-        border: 1px dashed #a0a0a0 !important;
-    }
-    [data-testid="stFileUploader"] span, 
-    [data-testid="stFileUploader"] small,
-    [data-testid="stFileUploader"] div {
-        color: #333333 !important;
-    }
-    
-    /* 5. Corrección de textos pequeños y markdown */
-    .stMarkdown p, .stMarkdown li, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
-        color: #212529 !important;
-    }
-    
-    small, .caption {
-        color: #666 !important;
-        opacity: 1 !important;
-    }
+    return f"<style>{common_css}{mode_css}</style>"
 
+# --- THEME SELECTOR ---
+with st.sidebar.expander("⚙️ Configuración", expanded=True):
+    app_theme = st.radio("Tema de la App", ["Claro", "Oscuro"], index=0, horizontal=True)
 
-
-</style>
-""", unsafe_allow_html=True)
+st.markdown(get_theme_css(app_theme), unsafe_allow_html=True)
 
 # --- UTILS COMUNES ---
 DEFAULT_THEME_COLOR = '#BDE5F8'
