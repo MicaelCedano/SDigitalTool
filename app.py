@@ -158,7 +158,7 @@ def get_theme_css(theme_mode):
 
 # --- THEME SELECTOR ---
 with st.sidebar.expander("⚙️ Configuración", expanded=True):
-    app_theme = st.radio("Tema de la App", ["Claro", "Oscuro"], index=0, horizontal=True)
+    app_theme = st.radio("Tema de la App", ["Claro", "Oscuro"], index=1, horizontal=True)
 
 st.markdown(get_theme_css(app_theme), unsafe_allow_html=True)
 
