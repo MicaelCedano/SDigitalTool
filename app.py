@@ -192,6 +192,58 @@ st.markdown("""
         padding: 10px;
     }
 
+    /* CORRECCIÓN TOTAL DE CONTRASTE (FORCE LIGHT THEME) */
+    
+    /* 1. Labels de todos los widgets (Input, Select, etc) */
+    .stTextInput label, .stNumberInput label, .stDateInput label, .stSelectbox label, .stFileUploader label, .stRadio label {
+        color: #212529 !important;
+        font-weight: 600 !important;
+        font-size: 14px !important;
+        opacity: 1 !important;
+    }
+
+    /* 2. Fondos de Inputs para que sean blancos y no grises oscuros */
+    .stTextInput > div > div, 
+    .stNumberInput > div > div, 
+    .stDateInput > div > div,
+    div[data-baseweb="select"] > div {
+        background-color: #ffffff !important;
+        border: 1px solid #ced4da !important; 
+        color: #000000 !important;
+    }
+    
+    /* 3. Texto dentro de los inputs */
+    input {
+        color: #000000 !important;
+        caret-color: #000000 !important;
+    }
+    
+    /* 4. File Uploader (Subida de archivos) */
+    [data-testid="stFileUploader"] {
+        padding: 10px;
+        border-radius: 10px;
+    }
+    [data-testid="stFileUploader"] section {
+        background-color: #f8f9fa !important; /* Gris muy claro */
+        border: 1px dashed #a0a0a0 !important;
+    }
+    [data-testid="stFileUploader"] span, 
+    [data-testid="stFileUploader"] small,
+    [data-testid="stFileUploader"] div {
+        color: #333333 !important;
+    }
+    
+    /* 5. Corrección de textos pequeños y markdown */
+    .stMarkdown p, .stMarkdown li, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
+        color: #212529 !important;
+    }
+    
+    small, .caption {
+        color: #666 !important;
+        opacity: 1 !important;
+    }
+
+
 
 </style>
 """, unsafe_allow_html=True)
